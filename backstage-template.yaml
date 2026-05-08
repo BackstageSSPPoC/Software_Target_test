@@ -173,7 +173,7 @@ apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 
 metadata:
-  name: retrofit-jenkins-argocd
+  name: retrofit-jenkins-argocd-Generic
   title: Integrating CI/CD Into Existing Generic-Repo
   description: Inject CI/CD directly into Desired Repo/Branch (Node.js / Java Maven / Java Gradle)
 
