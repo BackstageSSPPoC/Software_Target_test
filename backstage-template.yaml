@@ -1,128 +1,210 @@
+# # apiVersion: scaffolder.backstage.io/v1beta3
+# # kind: Template
+
+# # metadata:
+# #   name: retrofit-jenkins-argocd
+# #   title: Inject CI/CD into Existing Repo
+# #   description: Inject Jenkins CI + ArgoCD deployment into an existing repository
+
+# # spec:
+# #   owner: development
+# #   type: service
+
+# #   parameters:
+# #   - title: Select Existing Repository
+# #     required:
+# #       - repoUrl
+# #       - component_id
+# #       - environment
+
+# #     properties:
+
+# #       repoUrl:
+# #         title: Repository
+# #         type: string
+# #         ui:field: RepoUrlPicker
+# #         ui:options:
+# #           allowedHosts:
+# #             - github.com
+# #           allowedOwners:
+# #             - BackstageSSPPoC
+# #           # requestUserCredentials:
+# #           #   secretsKey: USER_OAUTH_TOKEN
+
+# #       component_id:
+# #         title: Component Name
+# #         type: string
+# #         description: Keep same as repo name
+
+# #       environment:
+# #         title: Environment
+# #         type: string
+# #         enum:
+# #           - dev
+# #           - prod
+
+# #   steps:
+
+# #     # ✅ 1. Fetch SAME template content
+# #     - id: fetch-base
+# #       name: Fetch Template Files
+# #       action: fetch:template
+# #       input:
+# #         url: ./template
+# #         values:
+# #           app_name: ${{ parameters.component_id }}
+# #           app_env: ${{ parameters.environment }}
+
+# #     # ✅ 2. Inject into EXISTING repo via PR
+# #     - id: inject-ci-cd
+# #       name: Inject CI/CD via Pull Request
+# #       action: publish:github:pull-request
+# #       input:
+# #         repoUrl: ${{ parameters.repoUrl }}
+# #         # token: ${{ secrets.USER_OAUTH_TOKEN }}
+# #         branchName: backstage-integration-${{ parameters.component_id }}
+# #         title: "Add Jenkins + ArgoCD CI/CD"
+# #         description: |
+# #           This PR adds:
+# #           - Jenkinsfile
+# #           - Dockerfile
+# #           - catalog-info.yaml
+# #           - Kubernetes manifests
+# #         sourcePath: ./        # fetched files
+# #         targetPath: ./        # repo root
+
+# #     # ✅ 3. Register in Backstage Catalog
+# #     # - id: register
+# #     #   name: Register Existing Repo
+# #     #   action: catalog:register
+# #     #   input:
+# #     #     repoContentsUrl: ${{ steps['inject-ci-cd'].output.repoContentsUrl }}
+# #     #     catalogInfoPath: "/catalog-info.yaml"
+
+# #     # ✅ 4. Create GitOps PR (REUSE YOUR EXISTING LOGIC)
+# #     - id: create-k8s-folder
+# #       name: Create K8s Manifests Folder
+# #       action: publish:github:pull-request
+# #       input:
+# #         repoUrl: github.com?owner=BackstageSSPPoC&repo=k8s-manifests
+# #         branchName: create-${{ parameters.component_id }}
+# #         title: "Add artifact for ${{ parameters.component_id }}"
+# #         description: "This PR creates Kubernetes artifact for ${{ parameters.component_id }}"
+# #         sourcePath: ./manifest-templates
+# #         targetPath: apps/${{ parameters.component_id }}
+
+# #   output:
+# #     links:
+# #       - title: Pull Request
+# #         url: ${{ steps['inject-ci-cd'].output.remoteUrl }}
+
+
+
+# # apiVersion: scaffolder.backstage.io/v1beta3
+# # kind: Template
+
+# # metadata:
+# #   name: retrofit-jenkins-argocd
+# #   title: Integrating CI/CD Into Existing Repo - JAVA
+# #   description: Inject CI/CD directly into Desired Repo/Branch - JAVA
+
+# # spec:
+# #   owner: development
+# #   type: service
+
+# #   parameters:
+# #     - title: Select Repo
+# #       required:
+# #         - repo
+  
+# #       properties:
+
+# #         repo:
+# #           title: Select Repository
+# #           type: string
+# #           # ui:field: RepoDropdown
+
+# #         environment:
+# #           title: Environment
+# #           type: string
+# #           enum:
+# #             - dev
+# #             - prod
+# #   steps:
+
+# #     - id: fetch-base
+# #       name: Fetch Template Files
+# #       action: fetch:template
+# #       input:
+# #         url: ./template
+# #         values:
+# #           app_name: ${{ parameters.repo }}
+# #           app_env: ${{ parameters.environment }}
+
+# #     # - id: register
+# #     #   name: Register in Catalog
+# #     #   action: catalog:register
+# #     #   input:
+# #     #     repoContentsUrl: https://github.com/BackstageSSPPoC/${{ parameters.repo }}/blob/main
+# #     #     catalogInfoPath: /catalog-info.yaml
+# #     #     optional: true
+
+# #     - id: push-to-main
+# #       name: Inject CI/CD Directly
+# #       action: github:push
+# #       input:
+# #         repoUrl: github.com?owner=BackstageSSPPoC&repo=${{ parameters.repo }}
+# #         branch: main
+# #         commitMessage: "chore: inject CI/CD template"
+# #         sourcePath: ./
+
+# #   output:
+# #     links:
+# #       - title: View Repository
+# #         url: https://github.com/BackstageSSPPoC/${{ parameters.repo | trim }}/tree/main
+
+
+
+
+
+
+
 # apiVersion: scaffolder.backstage.io/v1beta3
 # kind: Template
 
 # metadata:
-#   name: retrofit-jenkins-argocd
-#   title: Inject CI/CD into Existing Repo
-#   description: Inject Jenkins CI + ArgoCD deployment into an existing repository
+#   name: retrofit-jenkins-argocd-Generic
+#   title: Integrating CI/CD Into Existing Generic-Repo
+#   description: Inject CI/CD directly into Desired Repo/Branch (Node.js / Java Maven / Java Gradle)
 
 # spec:
 #   owner: development
 #   type: service
 
 #   parameters:
-#   - title: Select Existing Repository
-#     required:
-#       - repoUrl
-#       - component_id
-#       - environment
-
-#     properties:
-
-#       repoUrl:
-#         title: Repository
-#         type: string
-#         ui:field: RepoUrlPicker
-#         ui:options:
-#           allowedHosts:
-#             - github.com
-#           allowedOwners:
-#             - BackstageSSPPoC
-#           # requestUserCredentials:
-#           #   secretsKey: USER_OAUTH_TOKEN
-
-#       component_id:
-#         title: Component Name
-#         type: string
-#         description: Keep same as repo name
-
-#       environment:
-#         title: Environment
-#         type: string
-#         enum:
-#           - dev
-#           - prod
-
-#   steps:
-
-#     # ✅ 1. Fetch SAME template content
-#     - id: fetch-base
-#       name: Fetch Template Files
-#       action: fetch:template
-#       input:
-#         url: ./template
-#         values:
-#           app_name: ${{ parameters.component_id }}
-#           app_env: ${{ parameters.environment }}
-
-#     # ✅ 2. Inject into EXISTING repo via PR
-#     - id: inject-ci-cd
-#       name: Inject CI/CD via Pull Request
-#       action: publish:github:pull-request
-#       input:
-#         repoUrl: ${{ parameters.repoUrl }}
-#         # token: ${{ secrets.USER_OAUTH_TOKEN }}
-#         branchName: backstage-integration-${{ parameters.component_id }}
-#         title: "Add Jenkins + ArgoCD CI/CD"
-#         description: |
-#           This PR adds:
-#           - Jenkinsfile
-#           - Dockerfile
-#           - catalog-info.yaml
-#           - Kubernetes manifests
-#         sourcePath: ./        # fetched files
-#         targetPath: ./        # repo root
-
-#     # ✅ 3. Register in Backstage Catalog
-#     # - id: register
-#     #   name: Register Existing Repo
-#     #   action: catalog:register
-#     #   input:
-#     #     repoContentsUrl: ${{ steps['inject-ci-cd'].output.repoContentsUrl }}
-#     #     catalogInfoPath: "/catalog-info.yaml"
-
-#     # ✅ 4. Create GitOps PR (REUSE YOUR EXISTING LOGIC)
-#     - id: create-k8s-folder
-#       name: Create K8s Manifests Folder
-#       action: publish:github:pull-request
-#       input:
-#         repoUrl: github.com?owner=BackstageSSPPoC&repo=k8s-manifests
-#         branchName: create-${{ parameters.component_id }}
-#         title: "Add artifact for ${{ parameters.component_id }}"
-#         description: "This PR creates Kubernetes artifact for ${{ parameters.component_id }}"
-#         sourcePath: ./manifest-templates
-#         targetPath: apps/${{ parameters.component_id }}
-
-#   output:
-#     links:
-#       - title: Pull Request
-#         url: ${{ steps['inject-ci-cd'].output.remoteUrl }}
-
-
-
-# apiVersion: scaffolder.backstage.io/v1beta3
-# kind: Template
-
-# metadata:
-#   name: retrofit-jenkins-argocd
-#   title: Integrating CI/CD Into Existing Repo - JAVA
-#   description: Inject CI/CD directly into Desired Repo/Branch - JAVA
-
-# spec:
-#   owner: development
-#   type: service
-
-#   parameters:
-#     - title: Select Repo
+#     - title: Select Repo & Language
 #       required:
 #         - repo
-  
+#         - language
 #       properties:
 
 #         repo:
 #           title: Select Repository
 #           type: string
-#           # ui:field: RepoDropdown
+
+#         language:
+#           title: Project Language / Build Tool
+#           type: string
+#           enum:
+#             - nodejs
+#             - java-maven
+#             - java-gradle
+#             - python
+#           enumNames:
+#             - "Node.js (npm)"
+#             - "Java (Maven)"
+#             - "Java (Gradle)"
+#             - "Python (pip)"
 
 #         environment:
 #           title: Environment
@@ -130,32 +212,83 @@
 #           enum:
 #             - dev
 #             - prod
+
 #   steps:
 
-#     - id: fetch-base
-#       name: Fetch Template Files
+#     # ─── Common files: manifests, catalog-info, sonar, Dockerfile ───────────────
+
+#     - id: fetch-common
+#       name: Fetch Common Template Files
 #       action: fetch:template
 #       input:
-#         url: ./template
+#         url: ./template/skeleton
+#         # Excludes language-specific Jenkinsfile folders — only root files are picked
+#         values:
+#           app_name: ${{ parameters.repo }}
+#           app_env: ${{ parameters.environment }}
+#           language: ${{ parameters.language }}
+
+#     # ─── Node.js Pipeline ────────────────────────────────────────────────────────
+
+#     - id: fetch-nodejs-pipeline
+#       name: Fetch Node.js Jenkinsfile
+#       if: ${{ parameters.language === "nodejs" }}
+#       action: fetch:template
+#       input:
+#         url: ./template/nodejs
+#         targetPath: ./
 #         values:
 #           app_name: ${{ parameters.repo }}
 #           app_env: ${{ parameters.environment }}
 
-#     # - id: register
-#     #   name: Register in Catalog
-#     #   action: catalog:register
-#     #   input:
-#     #     repoContentsUrl: https://github.com/BackstageSSPPoC/${{ parameters.repo }}/blob/main
-#     #     catalogInfoPath: /catalog-info.yaml
-#     #     optional: true
+#     # ─── Java Maven Pipeline ─────────────────────────────────────────────────────
 
-#     - id: push-to-main
+#     - id: fetch-java-maven-pipeline
+#       name: Fetch Java Maven Jenkinsfile
+#       if: ${{ parameters.language === "java-maven" }}
+#       action: fetch:template
+#       input:
+#         url: ./template/java-maven
+#         targetPath: ./
+#         values:
+#           app_name: ${{ parameters.repo }}
+#           app_env: ${{ parameters.environment }}
+
+#     # ─── Java Gradle Pipeline ────────────────────────────────────────────────────
+
+#     - id: fetch-java-gradle-pipeline
+#       name: Fetch Java Gradle Jenkinsfile
+#       if: ${{ parameters.language === "java-gradle" }}
+#       action: fetch:template
+#       input:
+#         url: ./template/java-gradle
+#         targetPath: ./
+#         values:
+#           app_name: ${{ parameters.repo }}
+#           app_env: ${{ parameters.environment }}
+
+#     # ─── Python Pipeline ────────────────────────────────────────────────────────
+
+#     - id: fetch-python-pipeline
+#       name: Fetch Python Jenkinsfile
+#       if: ${{ parameters.language === "python" }}
+#       action: fetch:template
+#       input:
+#         url: ./template/python
+#         targetPath: ./
+#         values:
+#           app_name: ${{ parameters.repo }}
+#           app_env: ${{ parameters.environment }}
+
+#     # ─── Inject everything into the target repo ──────────────────────────────────
+
+#     - id: push-to-repo
 #       name: Inject CI/CD Directly
 #       action: github:push
 #       input:
 #         repoUrl: github.com?owner=BackstageSSPPoC&repo=${{ parameters.repo }}
 #         branch: main
-#         commitMessage: "chore: inject CI/CD template"
+#         commitMessage: "chore: inject ${{ parameters.language }} CI/CD template"
 #         sourcePath: ./
 
 #   output:
@@ -166,16 +299,13 @@
 
 
 
-
-
-
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 
 metadata:
-  name: retrofit-jenkins-argocd-Generic
-  title: Integrating CI/CD Into Existing Generic-Repo
-  description: Inject CI/CD directly into Desired Repo/Branch (Node.js / Java Maven / Java Gradle)
+  name: retrofit-jenkins-argocd Generic-Template
+  title: Integrating CI/CD Into Existing Repo - Generic-Template
+  description: Integrating CI/CD directly into Desired Repo/Branch (Node.js / Java Maven / Java Gradle / Python)
 
 spec:
   owner: development
@@ -201,10 +331,10 @@ spec:
             - java-gradle
             - python
           enumNames:
-            - "Node.js (npm)"
-            - "Java (Maven)"
-            - "Java (Gradle)"
-            - "Python (pip)"
+            - "Node.js (npm)       → port 3000"
+            - "Java Maven          → port 8080"
+            - "Java Gradle         → port 8080"
+            - "Python Flask        → port 5000"
 
         environment:
           title: Environment
@@ -213,22 +343,71 @@ spec:
             - dev
             - prod
 
-  steps:
+        app_port:
+          title: App Port
+          type: string
+          ui:widget: hidden
+          default: "8080"
 
-    # ─── Common files: manifests, catalog-info, sonar, Dockerfile ───────────────
+      dependencies:
+        language:
+          oneOf:
+            - properties:
+                language:
+                  enum:
+                    - nodejs
+                app_port:
+                  type: string
+                  default: "3000"
+                  ui:widget: hidden
+              required:
+                - app_port
+
+            - properties:
+                language:
+                  enum:
+                    - java-maven
+                app_port:
+                  type: string
+                  default: "8080"
+                  ui:widget: hidden
+              required:
+                - app_port
+
+            - properties:
+                language:
+                  enum:
+                    - java-gradle
+                app_port:
+                  type: string
+                  default: "8080"
+                  ui:widget: hidden
+              required:
+                - app_port
+
+            - properties:
+                language:
+                  enum:
+                    - python
+                app_port:
+                  type: string
+                  default: "5000"
+                  ui:widget: hidden
+              required:
+                - app_port
+
+  steps:
 
     - id: fetch-common
       name: Fetch Common Template Files
       action: fetch:template
       input:
-        url: ./template/skeleton
-        # Excludes language-specific Jenkinsfile folders — only root files are picked
+        url: ./template/common
         values:
           app_name: ${{ parameters.repo }}
           app_env: ${{ parameters.environment }}
           language: ${{ parameters.language }}
-
-    # ─── Node.js Pipeline ────────────────────────────────────────────────────────
+          app_port: ${{ parameters.app_port }}
 
     - id: fetch-nodejs-pipeline
       name: Fetch Node.js Jenkinsfile
@@ -240,8 +419,7 @@ spec:
         values:
           app_name: ${{ parameters.repo }}
           app_env: ${{ parameters.environment }}
-
-    # ─── Java Maven Pipeline ─────────────────────────────────────────────────────
+          app_port: ${{ parameters.app_port }}
 
     - id: fetch-java-maven-pipeline
       name: Fetch Java Maven Jenkinsfile
@@ -253,8 +431,7 @@ spec:
         values:
           app_name: ${{ parameters.repo }}
           app_env: ${{ parameters.environment }}
-
-    # ─── Java Gradle Pipeline ────────────────────────────────────────────────────
+          app_port: ${{ parameters.app_port }}
 
     - id: fetch-java-gradle-pipeline
       name: Fetch Java Gradle Jenkinsfile
@@ -266,8 +443,7 @@ spec:
         values:
           app_name: ${{ parameters.repo }}
           app_env: ${{ parameters.environment }}
-
-    # ─── Python Pipeline ────────────────────────────────────────────────────────
+          app_port: ${{ parameters.app_port }}
 
     - id: fetch-python-pipeline
       name: Fetch Python Jenkinsfile
@@ -279,8 +455,7 @@ spec:
         values:
           app_name: ${{ parameters.repo }}
           app_env: ${{ parameters.environment }}
-
-    # ─── Inject everything into the target repo ──────────────────────────────────
+          app_port: ${{ parameters.app_port }}
 
     - id: push-to-repo
       name: Inject CI/CD Directly
@@ -288,7 +463,7 @@ spec:
       input:
         repoUrl: github.com?owner=BackstageSSPPoC&repo=${{ parameters.repo }}
         branch: main
-        commitMessage: "chore: inject ${{ parameters.language }} CI/CD template"
+        commitMessage: "chore: inject ${{ parameters.language }} CI/CD template (port: ${{ parameters.app_port }})"
         sourcePath: ./
 
   output:
