@@ -11,7 +11,7 @@ spec:
     - http:
         paths:
           - path: /${APP_NAME}(/|$)(.*)               
-            pathType: Prefix        
+            pathType: ImplementationSpecific  
             backend:
               service:
                 name: ${APP_NAME}
