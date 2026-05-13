@@ -52,7 +52,7 @@ spec:
           title: App Port 
           type: string
           ui:widget: hidden
-          default: "8080"
+          # default: "8080"
 
       dependencies:
         language:
