@@ -29,15 +29,35 @@ pipeline {
                     echo "GIT_BRANCH: ${env.GIT_BRANCH}"
 
                     if (env.BRANCH_NAME == "main" || env.BRANCH_NAME.endsWith("/main") || env.GIT_BRANCH?.endsWith("main")) {
-                        echo "Main branch detected → CI + CD"
-                        env.RUN_MODE = "cd"
+                        echo "Main branch → CI + CD → PROD"
+                        env.RUN_MODE        = "cd"
+                        env.DEPLOY_ENV      = "prod"
+                        env.DEPLOY_NAMESPACE = "prod"
+
+                    } else if (env.BRANCH_NAME == "qat" || env.BRANCH_NAME.endsWith("/qat") || env.GIT_BRANCH?.endsWith("qat")) {
+                        echo "QAT branch → CI + CD → QAT"
+                        env.RUN_MODE        = "cd"
+                        env.DEPLOY_ENV      = "qat"
+                        env.DEPLOY_NAMESPACE = "qat"
+
+                    } else if (env.BRANCH_NAME == "dev" || env.BRANCH_NAME.endsWith("/dev") || env.GIT_BRANCH?.endsWith("dev")) {
+                        echo "Dev branch → CI + CD → DEV"
+                        env.RUN_MODE        = "cd"
+                        env.DEPLOY_ENV      = "dev"
+                        env.DEPLOY_NAMESPACE = "dev"
+
                     } else {
-                        echo "Non-main branch → CI only"
-                        env.RUN_MODE = "ci"
+                        echo "Feature branch → CI only"
+                        env.RUN_MODE        = "ci"
+                        env.DEPLOY_ENV      = ""
+                        env.DEPLOY_NAMESPACE = ""
                     }
+
+                    echo "Mode: ${env.RUN_MODE} | Env: ${env.DEPLOY_ENV} | Namespace: ${env.DEPLOY_NAMESPACE}"
                 }
             }
         }
+
 
 // ================= CI STAGES =================
 
@@ -115,16 +135,20 @@ pipeline {
                     git clone --depth 1 https://${GITHUB_TOKEN}@github.com/BackstageSSPPoC/k8s-manifests.git
                     cd k8s-manifests
 
-                    mkdir -p apps/${APP_NAME}
-                    cp -r ../manifest-templates/* apps/${APP_NAME}/ || true
+                    # Environment specific folder
+                    mkdir -p apps/${APP_NAME}/${DEPLOY_ENV}
+                    cp -r ../manifest-templates/* apps/${APP_NAME}/${DEPLOY_ENV}/ || true
 
-                    sed -i "s|\\${APP_NAME}|${APP_NAME}|g" apps/${APP_NAME}/*.yaml || true
-                    sed -i "s|\\${DOCKER_IMAGE}|${IMAGE_TAG}|g" apps/${APP_NAME}/deployment.yaml || true
+                    # Replace all placeholders
+                    sed -i "s|\${APP_NAME}|${APP_NAME}|g" apps/${APP_NAME}/${DEPLOY_ENV}/*.yaml || true
+                    sed -i "s|\${DOCKER_IMAGE}|${IMAGE_TAG}|g" apps/${APP_NAME}/${DEPLOY_ENV}/*.yaml || true
+                    sed -i "s|\${APP_PORT}|${APP_PORTS}|g" apps/${APP_NAME}/${DEPLOY_ENV}/*.yaml || true
+                    sed -i "s|\${NAMESPACE}|${DEPLOY_NAMESPACE}|g" apps/${APP_NAME}/${DEPLOY_ENV}/*.yaml || true
 
                     git config user.email "jenkins@local"
                     git config user.name "jenkins"
                     git add .
-                    git commit -m "Deploy ${APP_NAME} build ${BUILD_NUMBER}" || echo "No changes"
+                    git commit -m "[${DEPLOY_ENV}] Deploy ${APP_NAME} build ${BUILD_NUMBER}" || echo "No changes"
                     git push origin main
                     '''
                 }
