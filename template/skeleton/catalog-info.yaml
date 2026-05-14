@@ -23,7 +23,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 
 metadata:
-  name: ${{values.app_name}}
+  name: ${{values.app_name}}-${values.app_env}
   description: Service ${{values.app_name}}
 
   annotations:
@@ -33,7 +33,7 @@ metadata:
     argocd/app-name: ${{values.app_name | lower}}-${{values.app_env}}
     backstage.io/kubernetes-id: ${{values.app_name}}
     backstage.io/kubernetes-namespace: ${{values.app_env}}   # ← env se namespace
-    sonarqube.org/project-key: ${{values.app_name | lower}}
+    sonarqube.org/project-key: ${{values.app_name | lower}}-${{values.app_env}}   # ← env se project key
 
 spec:
   type: service
