@@ -12,6 +12,9 @@ pipeline {
         DOCKER_TAG = "1.0.${BUILD_NUMBER}"
         IMAGE_TAG = "${DOCKER_IMAGE}:${DOCKER_TAG}"
         GITOPS_REPO = "https://github.com/BackstageSSPPoC/k8s-manifests.git"
+        APP_PORTS = "${{values.app_port}}"
+        DEPLOY_ENV = "${{values.app_env}}"       
+        DEPLOY_NAMESPACE = "${{values.app_env}}"
     }
 
     stages {
@@ -29,31 +32,12 @@ pipeline {
                     echo "GIT_BRANCH: ${env.GIT_BRANCH}"
 
                     if (env.BRANCH_NAME == "main" || env.BRANCH_NAME.endsWith("/main") || env.GIT_BRANCH?.endsWith("main")) {
-                        echo "Main branch → CI + CD → PROD"
-                        env.RUN_MODE        = "cd"
-                        env.DEPLOY_ENV      = "prod"
-                        env.DEPLOY_NAMESPACE = "prod"
-
-                    } else if (env.BRANCH_NAME == "qat" || env.BRANCH_NAME.endsWith("/qat") || env.GIT_BRANCH?.endsWith("qat")) {
-                        echo "QAT branch → CI + CD → QAT"
-                        env.RUN_MODE        = "cd"
-                        env.DEPLOY_ENV      = "qat"
-                        env.DEPLOY_NAMESPACE = "qat"
-
-                    } else if (env.BRANCH_NAME == "dev" || env.BRANCH_NAME.endsWith("/dev") || env.GIT_BRANCH?.endsWith("dev")) {
-                        echo "Dev branch → CI + CD → DEV"
-                        env.RUN_MODE        = "cd"
-                        env.DEPLOY_ENV      = "dev"
-                        env.DEPLOY_NAMESPACE = "dev"
-
+                        echo "Main branch detected → CI + CD"
+                        env.RUN_MODE = "cd"
                     } else {
-                        echo "Feature branch → CI only"
-                        env.RUN_MODE        = "ci"
-                        env.DEPLOY_ENV      = ""
-                        env.DEPLOY_NAMESPACE = ""
+                        echo "Non-main branch → CI only"
+                        env.RUN_MODE = "ci"
                     }
-
-                    echo "Mode: ${env.RUN_MODE} | Env: ${env.DEPLOY_ENV} | Namespace: ${env.DEPLOY_NAMESPACE}"
                 }
             }
         }

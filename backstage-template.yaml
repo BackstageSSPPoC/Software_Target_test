@@ -41,11 +41,11 @@ spec:
           enum:
             - dev
             - qat
-            - main
+            - prod
           enumNames:
             - "Development"
             - "Quality Assurance"
-            - "Production{main}"
+            - "Production"
 
         # Hidden — auto set from language
         app_port:
@@ -173,7 +173,7 @@ spec:
       action: github:push
       input:
         repoUrl: github.com?owner=BackstageSSPPoC&repo=${{ parameters.repo }}
-        branch: ${{ parameters.environment }}
+        branch: main
         commitMessage: "chore: inject ${{ parameters.language }} CI/CD [port:${{ parameters.app_port }}] [${{ parameters.environment }}]"
         sourcePath: ./
 
