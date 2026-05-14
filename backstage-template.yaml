@@ -180,4 +180,4 @@ spec:
   output:
     links:
       - title: View Repository
-        url: https://github.com/BackstageSSPPoC/${{ parameters.repo | trim }}/tree/${{ parameters.environment === "prod" and "main" or parameters.environment }}
+        url: https://github.com/BackstageSSPPoC/${{ parameters.repo | trim }}/tree/main
