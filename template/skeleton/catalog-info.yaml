@@ -1,24 +1,3 @@
-# apiVersion: backstage.io/v1alpha1
-# kind: Component
-
-# metadata:
-#   name: ${{values.app_name}}
-#   description: Service ${{values.app_name}}
-
-#   annotations:
-#     github.com/project-slug: BackstageSSPPoC/${{values.app_name}}
-#     backstage.io/techdocs-ref: dir:.
-#     jenkins.io/job-full-name: Backstage_SSP_PoC/${{values.app_name | trim}}/main
-#     argocd/app-name: ${{ values.app_name | lower }}
-#     backstage.io/kubernetes-id: ${{values.app_name}}
-#     backstage.io/kubernetes-namespace: default
-#     sonarqube.org/project-key: ${{ values.app_name | lower }}
-
-# spec:
-#   type: service
-#   owner: development
-#   lifecycle: experimental
-
 apiVersion: backstage.io/v1alpha1
 kind: Component
 
@@ -38,3 +17,23 @@ spec:
   type: service
   owner: development
   lifecycle: experimental
+
+# apiVersion: backstage.io/v1alpha1
+# kind: Component
+
+# metadata:
+#   name: ${{values.app_name}}
+#   description: Service ${{values.app_name}}
+
+#   annotations:
+#     github.com/project-slug: BackstageSSPPoC/${{values.app_name}}
+#     backstage.io/techdocs-ref: dir:.
+#     jenkins.io/job-full-name: Backstage_SSP_PoC/${{values.app_name | trim}}/main
+#     argocd/app-name: ${{ values.app_name | lower }}
+#     backstage.io/kubernetes-id: ${{values.app_name}}
+#     sonarqube.org/project-key: ${{ values.app_name | lower }}
+
+# spec:
+#   type: service
+#   owner: development
+#   lifecycle: experimental
