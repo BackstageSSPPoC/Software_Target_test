@@ -45,7 +45,7 @@ spec:
           enumNames:
             - "Development"
             - "Quality Assurance"
-            - "Production"
+            - "Production{main}"
 
         # Hidden — auto set from language
         app_port:
