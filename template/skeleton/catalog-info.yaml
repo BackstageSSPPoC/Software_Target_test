@@ -9,7 +9,7 @@ metadata:
     github.com/project-slug: BackstageSSPPoC/${{values.app_name}}
     backstage.io/techdocs-ref: dir:.
     jenkins.io/job-full-name: Backstage_SSP_PoC/${{values.app_name | trim}}/main
-    argocd/app-name: ${{ values.app_name | lower }}
+    argocd/app-name: ${{ values.app_name | lower }}-${{values.app_env}}
     backstage.io/kubernetes-id: ${{values.app_name}}
     sonarqube.org/project-key: ${{ values.app_name | lower }}
 
