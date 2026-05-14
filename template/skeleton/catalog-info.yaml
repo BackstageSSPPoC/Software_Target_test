@@ -32,7 +32,6 @@ metadata:
     jenkins.io/job-full-name: Backstage_SSP_PoC/${{values.app_name | trim}}/main
     argocd/app-name: ${{ values.app_name | lower }}
     backstage.io/kubernetes-id: ${{values.app_name}}
-    backstage.io/kubernetes-namespace: ${{values.app_env}}
     sonarqube.org/project-key: ${{ values.app_name | lower }}
 
 spec:
