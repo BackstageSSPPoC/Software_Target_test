@@ -23,7 +23,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 
 metadata:
-  name: ${{values.app_name}}-${values.app_env}
+  name: ${{values.app_name}}
   description: Service ${{values.app_name}}
 
   annotations:
@@ -32,7 +32,7 @@ metadata:
     jenkins.io/job-full-name: Backstage_SSP_PoC/${{values.app_name}}/${{values.app_env}}
     argocd/app-name: ${{values.app_name | lower}}-${{values.app_env}}
     backstage.io/kubernetes-id: ${{values.app_name}}
-    sonarqube.org/project-key: ${{values.app_name | lower}}-${{values.app_env}}   # ← env se project key
+    sonarqube.org/project-key: ${{values.app_name | lower}}   # ← env se project key
 
 spec:
   type: service
