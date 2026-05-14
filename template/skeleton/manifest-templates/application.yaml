@@ -24,7 +24,9 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: ${APP_NAME}-${NAMESPACE}
-  namespace: argocd
+  namespace: 
+  labels:
+    app.kubernetes.io/name: ${APP_NAME}
 spec:
   project: default
   source:
