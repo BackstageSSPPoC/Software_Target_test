@@ -40,7 +40,7 @@ spec:
           type: string
           enum:
             - dev
-            - qat
+            - qa
             - prod
           enumNames:
             - "Development"
