@@ -3,7 +3,7 @@ kind: Template
 
 metadata:
   name: retrofit-jenkins-argocd-Target-Namespace
-  title: Integrating CI/CD Into Existing Repo Into Target Namespace
+  title: Integrating CI/CD pipeline Into Existing Repo and Target Namespace
   description: Inject CI/CD directly into Desired Repo/Branch (Node.js / Java Maven / Java Gradle / Python)
 
 spec:
