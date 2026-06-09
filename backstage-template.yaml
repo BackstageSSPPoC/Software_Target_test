@@ -239,13 +239,8 @@ spec:
         target_cluster:
           title: Target Deployment Cluster
           type: string
-          description: "Select the GKE cluster where application will be deployed. Main cluster = backstage-poc-autopilot"
+          description: "Enter the target GKE cluster name manually"
           default: backstage-poc-autopilot
-          enum:
-            - backstage-poc-autopilot
-          enumNames:
-            - "Main Cluster (backstage-poc-autopilot)"
-          # Note: New clusters automatically appear here after GKE pipeline runs
 
         # Hidden — auto set from language
         app_port:
