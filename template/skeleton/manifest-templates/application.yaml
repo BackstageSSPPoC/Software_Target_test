@@ -20,6 +20,26 @@
 #       selfHeal: true
 
 
+# apiVersion: argoproj.io/v1alpha1
+# kind: Application
+# metadata:
+#   name: ${APP_NAME}-${NAMESPACE}
+#   namespace: argocd
+# spec:
+#   project: default
+#   source:
+#     repoURL: https://github.com/BackstageSSPPoC/k8s-manifests.git
+#     targetRevision: main
+#     path: apps/${APP_NAME}/${NAMESPACE}
+#   destination:
+#     server: https://kubernetes.default.svc
+#     namespace: ${NAMESPACE}
+#   syncPolicy:
+#     automated:
+#       prune: true
+#       selfHeal: true
+
+
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -32,9 +52,11 @@ spec:
     targetRevision: main
     path: apps/${APP_NAME}/${NAMESPACE}
   destination:
-    server: https://kubernetes.default.svc
+    server: ${TARGET_CLUSTER_SERVER}    
     namespace: ${NAMESPACE}
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true           
