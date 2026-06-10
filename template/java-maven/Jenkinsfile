@@ -14,8 +14,9 @@ pipeline {
         APP_PORTS = "${{values.app_port}}"
         DEPLOY_ENV = "${{values.app_env}}"       
         DEPLOY_NAMESPACE = "${{values.app_env}}"
-        TARGET_CLUSTER  = "${{values.target_cluster}}"   
-        ARGOCD_SERVER   = '35.184.124.65'               
+        TARGET_CLUSTER  = "${{values.target_cluster}}"
+        ARGOCD_SERVER   = '35.184.124.65'
+        TFSTATE_BUCKET  = 'gssp-tfstate-poc-2026'
         MAIN_CONTEXT    = 'gke_gspann-backstage_us-central1_backstage-poc-autopilot'
     }
 
