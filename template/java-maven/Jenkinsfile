@@ -14,6 +14,9 @@ pipeline {
         APP_PORTS = "${{values.app_port}}"
         DEPLOY_ENV = "${{values.app_env}}"       
         DEPLOY_NAMESPACE = "${{values.app_env}}"
+        TARGET_CLUSTER  = "${{values.target_cluster}}"   
+        ARGOCD_SERVER   = '35.184.124.65'               
+        MAIN_CONTEXT    = 'gke_gspann-backstage_us-central1_backstage-poc-autopilot'
     }
 
     stages {
@@ -113,41 +116,78 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
                     sh '''
+                    echo "====================================="
+                    echo "Fetching target cluster server from ArgoCD..."
+
+                    kubectl config use-context ${MAIN_CONTEXT}
+
+                    ARGOCD_PASSWORD=$(kubectl get secret argocd-initial-admin-secret \
+                      -n argocd \
+                      -o jsonpath="{.data.password}" | base64 -d)
+
+                    argocd login ${ARGOCD_SERVER} \
+                      --username admin \
+                      --password $ARGOCD_PASSWORD \
+                      --insecure
+
+                    if [ "${TARGET_CLUSTER}" = "backstage-poc-autopilot" ]; then
+                      TARGET_CLUSTER_SERVER="https://kubernetes.default.svc"
+                    else
+                      TARGET_CLUSTER_SERVER=$(argocd cluster list -o json | \
+                        python3 -c "
+import json, sys
+clusters = json.load(sys.stdin)
+for c in clusters:
+    if c.get('name') == '${TARGET_CLUSTER}':
+        print(c.get('server', ''))
+        break
+")
+                    fi
+
+                    if [ -z "$TARGET_CLUSTER_SERVER" ]; then
+                      echo "WARNING: Cluster '${TARGET_CLUSTER}' not found in ArgoCD."
+                      echo "Falling back to main cluster."
+                      TARGET_CLUSTER_SERVER="https://kubernetes.default.svc"
+                    fi
+
+                    echo "Target Cluster : ${TARGET_CLUSTER}"
+                    echo "Target Server  : $TARGET_CLUSTER_SERVER"
+                    echo "====================================="
+
                     rm -rf k8s-manifests
 
                     git clone --depth 1 https://${GITHUB_TOKEN}@github.com/BackstageSSPPoC/k8s-manifests.git
                     cd k8s-manifests
 
-                    # Environment specific folder
                     mkdir -p apps/${APP_NAME}/${DEPLOY_ENV}
-                    # application.yaml argocd folder me
+
                     mkdir -p argocd/
+
                     cp ../manifest-templates/application.yaml argocd/${APP_NAME}-${DEPLOY_ENV}.yaml || true
-                    
-                    # deployment/service/ingress apps folder me
-                    mkdir -p apps/${APP_NAME}/${DEPLOY_ENV}
+
                     cp ../manifest-templates/deployment.yaml apps/${APP_NAME}/${DEPLOY_ENV}/ || true
                     cp ../manifest-templates/service.yaml apps/${APP_NAME}/${DEPLOY_ENV}/ || true
                     cp ../manifest-templates/ingress.yaml apps/${APP_NAME}/${DEPLOY_ENV}/ || true
 
-                    # Replace all placeholders
                     sed -i "s|\\${APP_NAME}|${APP_NAME}|g" apps/${APP_NAME}/${DEPLOY_ENV}/*.yaml || true
                     sed -i "s|\\${DOCKER_IMAGE}|${IMAGE_TAG}|g" apps/${APP_NAME}/${DEPLOY_ENV}/*.yaml || true
                     sed -i "s|\\${APP_PORT}|${APP_PORTS}|g" apps/${APP_NAME}/${DEPLOY_ENV}/*.yaml || true
                     sed -i "s|\\${NAMESPACE}|${DEPLOY_NAMESPACE}|g" apps/${APP_NAME}/${DEPLOY_ENV}/*.yaml || true
                     sed -i "s|\\${APP_NAME}|${APP_NAME}|g" argocd/${APP_NAME}-${DEPLOY_ENV}.yaml || true
                     sed -i "s|\\${NAMESPACE}|${DEPLOY_NAMESPACE}|g" argocd/${APP_NAME}-${DEPLOY_ENV}.yaml || true
+                    sed -i "s|\\${TARGET_CLUSTER_SERVER}|$TARGET_CLUSTER_SERVER|g" argocd/${APP_NAME}-${DEPLOY_ENV}.yaml || true
 
                     git config user.email "jenkins@local"
                     git config user.name "jenkins"
                     git add .
-                    git commit -m "[${DEPLOY_ENV}] Deploy ${APP_NAME} build ${BUILD_NUMBER}" || echo "No changes"
+                    git commit -m "[${DEPLOY_ENV}] Deploy ${APP_NAME} build ${BUILD_NUMBER} → cluster:${TARGET_CLUSTER}" || echo "No changes to commit"
                     git push origin main
                     '''
                 }
             }
         }
     }
+
     post {
         always {
             sh "docker logout || true"
